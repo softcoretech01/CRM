@@ -4,7 +4,7 @@ import Modal from '../components/Modal';
 
 const API_BASE = 'http://localhost:8000/api/opportunities';
 
-const STAGES = ['Prospect', 'Qualification', 'Proposal', 'Negotiation', 'Won'];
+const DEFAULT_STAGES = ['Prospect', 'Qualification', 'Proposal', 'Negotiation', 'Won'];
 
 const EMPTY_FORM = {
   name: '', account_name: 'Infosys', value: '', probability: '',
@@ -12,9 +12,10 @@ const EMPTY_FORM = {
 };
 
 export default function Opportunities() {
+  const [stages, setStages] = useState(DEFAULT_STAGES);
   const [columns, setColumns] = useState(() => {
     const init = {};
-    STAGES.forEach(s => { init[s] = []; });
+    DEFAULT_STAGES.forEach(s => { init[s] = []; });
     return init;
   });
   const [draggedItem, setDraggedItem] = useState(null);
@@ -25,6 +26,8 @@ export default function Opportunities() {
   const [lostDealsCount, setLostDealsCount] = useState(0);
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [loading, setLoading] = useState(false);
+  const [owners, setOwners] = useState([]);
+  const [accountsList, setAccountsList] = useState([]);
 
   // ─── Fetch opportunities grouped by stage ───
   const fetchOpportunities = useCallback(async () => {
@@ -34,7 +37,7 @@ export default function Opportunities() {
       if (res.ok) {
         const data = await res.json();
         const normalised = {};
-        STAGES.forEach(s => {
+        stages.forEach(s => {
           normalised[s] = (data[s] || []).map(row => ({
             id: row.id,
             name: row.name,
@@ -53,11 +56,34 @@ export default function Opportunities() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [stages]);
 
   useEffect(() => {
     fetchOpportunities();
   }, [fetchOpportunities]);
+
+  useEffect(() => {
+    const fetchAccountsAndMasters = async () => {
+      try {
+        const accRes = await fetch('http://localhost:8000/api/accounts');
+        if (accRes.ok) setAccountsList(await accRes.json());
+        
+        const mastRes = await fetch('http://localhost:8000/api/masters?category=Owner');
+        if (mastRes.ok) setOwners(await mastRes.json());
+
+        const stageRes = await fetch('http://localhost:8000/api/masters?category=OpportunityStage');
+        if (stageRes.ok) {
+          const stagesData = await stageRes.json();
+          if (stagesData.length > 0) {
+            setStages(stagesData.map(s => s.value));
+          }
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchAccountsAndMasters();
+  }, []);
 
   // ─── Form helpers ───
   const handleInputChange = (e) => {
@@ -237,7 +263,8 @@ export default function Opportunities() {
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Account</label>
           <select name="account_name" value={formData.account_name} onChange={handleInputChange}
             className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
-            <option>Infosys</option><option>Zoho</option><option>Freshworks</option><option>Razorpay</option><option>Meesho</option>
+            <option value="">Select Account...</option>
+            {accountsList.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
           </select>
         </div>
         <div>
@@ -249,7 +276,7 @@ export default function Opportunities() {
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Stage</label>
           <select name="stage" value={formData.stage} onChange={handleInputChange}
             className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
-            {STAGES.map(s => <option key={s}>{s}</option>)}
+            {stages.map(s => <option key={s}>{s}</option>)}
           </select>
         </div>
         <div>
@@ -266,7 +293,8 @@ export default function Opportunities() {
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Owner</label>
           <select name="owner" value={formData.owner} onChange={handleInputChange}
             className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
-            <option>Arjun Mehta</option><option>Priya Sharma</option><option>Karan Nair</option><option>Divya Iyer</option>
+            <option value="">Select Owner...</option>
+            {owners.map(o => <option key={o.id} value={o.value}>{o.value}</option>)}
           </select>
         </div>
       </div>
@@ -299,7 +327,7 @@ export default function Opportunities() {
         <div className="flex-1 flex items-center justify-center text-[#9CA3AF]">Loading pipeline...</div>
       ) : (
         <div className="flex-1 flex gap-4 overflow-x-auto pb-4 hide-scrollbar items-start">
-          {STAGES.map((colName) => {
+          {stages.map((colName) => {
             const colItems = columns[colName] || [];
             const totalValue = colItems.reduce((acc, curr) => acc + parseFloat(curr.value || 0), 0);
             const isWon = colName === 'Won';

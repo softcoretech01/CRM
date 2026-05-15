@@ -18,6 +18,8 @@ export default function Accounts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [loading, setLoading] = useState(false);
+  const [owners, setOwners] = useState([]);
+  const [industries, setIndustries] = useState([]);
 
   // ─── Fetch accounts ───
   const fetchAccounts = useCallback(async () => {
@@ -42,6 +44,19 @@ export default function Accounts() {
 
   useEffect(() => {
     fetchAccounts();
+    const fetchMasters = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/masters');
+        if (res.ok) {
+          const data = await res.json();
+          setOwners(data.filter(m => m.category === 'Owner'));
+          setIndustries(data.filter(m => m.category === 'Industry'));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchMasters();
   }, [fetchAccounts]);
 
   // ─── Form helpers ───
@@ -139,8 +154,11 @@ export default function Accounts() {
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Industry</label>
-          <input type="text" name="industry" value={formData.industry} onChange={handleInputChange}
-            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none" />
+          <select name="industry" value={formData.industry} onChange={handleInputChange}
+            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
+            <option value="">Select Industry...</option>
+            {industries.map(i => <option key={i.id} value={i.value}>{i.value}</option>)}
+          </select>
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">GST / Tax ID</label>
@@ -149,14 +167,11 @@ export default function Accounts() {
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Owner</label>
-          <input type="text" name="owner" value={formData.owner} onChange={handleInputChange} list="owners"
-            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none" />
-          <datalist id="owners">
-            <option value="Arjun Mehta" />
-            <option value="Priya Sharma" />
-            <option value="Karan Nair" />
-            <option value="Divya Iyer" />
-          </datalist>
+          <select name="owner" value={formData.owner} onChange={handleInputChange}
+            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
+            <option value="">Select Owner...</option>
+            {owners.map(o => <option key={o.id} value={o.value}>{o.value}</option>)}
+          </select>
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Location</label>

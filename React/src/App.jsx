@@ -8,6 +8,11 @@ import Opportunities from './pages/Opportunities';
 import Contacts from './pages/Contacts';
 import Activities from './pages/Activities';
 import Reports from './pages/Reports';
+import LeadSourcesMaster from './pages/Lead_sources_master';
+import IndustriesMaster from './pages/Industries_master';
+import OpportunityStagesMaster from './pages/Oppurtunity_Stages_master';
+import ActivityTypesMaster from './pages/Activity_Types_master';
+import OwnersMaster from './pages/Owners_master';
 import { Bell, Search } from 'lucide-react';
 
 export default function App() {
@@ -52,6 +57,11 @@ export default function App() {
                 <Route path="/contacts" element={<Contacts />} />
                 <Route path="/activities" element={<Activities />} />
                 <Route path="/reports" element={<Reports />} />
+                <Route path="/masters/lead_sources" element={<LeadSourcesMaster />} />
+                <Route path="/masters/industries" element={<IndustriesMaster />} />
+                <Route path="/masters/opportunity_stages" element={<OpportunityStagesMaster />} />
+                <Route path="/masters/activity_types" element={<ActivityTypesMaster />} />
+                <Route path="/masters/owners" element={<OwnersMaster />} />
               </Routes>
             </div>
           </div>

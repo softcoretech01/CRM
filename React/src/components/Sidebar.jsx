@@ -1,8 +1,13 @@
-import React from 'react';
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, Building2, TrendingUp, Calendar, BarChart2, Zap, Settings, Contact } from 'lucide-react';
+import React, { useState } from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import { LayoutDashboard, Users, Building2, TrendingUp, Calendar, BarChart2, Zap, Settings, Contact, Database, ChevronDown, ChevronUp, Factory, Flag, ListTodo, UserCheck, Megaphone } from 'lucide-react';
 
 export default function Sidebar() {
+  const [mastersOpen, setMastersOpen] = useState(false);
+  const location = useLocation();
+
+  const isMastersActive = location.pathname.startsWith('/masters');
+
   const navItems = [
     { id: 'Dashboard', path: '/', icon: LayoutDashboard },
     { id: 'Leads', path: '/leads', icon: Users },
@@ -11,6 +16,14 @@ export default function Sidebar() {
     { id: 'Opportunities', path: '/opportunities', icon: TrendingUp },
     { id: 'Activities', path: '/activities', icon: Calendar },
     { id: 'Reports', path: '/reports', icon: BarChart2 },
+  ];
+
+  const masterSubItems = [
+    { id: 'Lead Sources', path: '/masters/lead_sources', icon: Megaphone },
+    { id: 'Industries', path: '/masters/industries', icon: Factory },
+    { id: 'Opportunity Stages', path: '/masters/opportunity_stages', icon: Flag },
+    { id: 'Activity Types', path: '/masters/activity_types', icon: ListTodo },
+    { id: 'Owners', path: '/masters/owners', icon: UserCheck }
   ];
 
   return (
@@ -24,8 +37,9 @@ export default function Sidebar() {
         </div>
       </div>
       
-      <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto">
+      <nav className="flex-1 py-6 px-4 space-y-2 overflow-y-auto hide-scrollbar">
         <p className="px-2 text-xs font-bold text-[#4B5563] uppercase tracking-wider mb-4">Main Menu</p>
+        
         {navItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -49,6 +63,47 @@ export default function Sidebar() {
             </NavLink>
           );
         })}
+
+        {/* Masters Accordion */}
+        <div className="pt-2">
+          <button 
+            onClick={() => setMastersOpen(!mastersOpen)}
+            className={`w-full flex items-center justify-between px-4 py-3 rounded-xl transition-all duration-300 text-sm font-semibold ${
+              isMastersActive 
+                ? 'bg-[#6366F1]/10 text-[#6366F1] shadow-[inset_4px_0_0_0_#6366F1]' 
+                : 'text-[#9CA3AF] hover:bg-[#1F2937]/80 hover:text-[#F9FAFB]'
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <Database className={`w-5 h-5 transition-colors ${isMastersActive ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
+              Masters
+            </div>
+            {mastersOpen ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          
+          {mastersOpen && (
+            <div className="mt-2 ml-6 space-y-1">
+              {masterSubItems.map((subItem) => {
+                const SubIcon = subItem.icon;
+                return (
+                  <NavLink
+                    key={subItem.id}
+                    to={subItem.path}
+                    className={({ isActive }) => `w-full flex items-center gap-3 px-4 py-2.5 rounded-lg transition-all duration-300 text-[13px] font-semibold
+                      ${isActive 
+                        ? 'bg-[#6366F1]/10 text-[#6366F1]' 
+                        : 'text-[#9CA3AF] hover:bg-[#1F2937]/50 hover:text-[#F9FAFB]'
+                      }
+                    `}
+                  >
+                    <SubIcon className={`w-4 h-4 transition-colors ${location.pathname === subItem.path ? 'text-[#6366F1]' : 'text-[#9CA3AF]'}`} />
+                    {subItem.id}
+                  </NavLink>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </nav>
 
       <div className="p-4 border-t border-[#1F2937] bg-[#111827]">

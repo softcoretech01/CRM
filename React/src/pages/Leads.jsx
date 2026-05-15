@@ -22,6 +22,9 @@ export default function Leads() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [loading, setLoading] = useState(false);
+  const [owners, setOwners] = useState([]);
+  const [sources, setSources] = useState([]);
+  const [industries, setIndustries] = useState([]);
 
   // ─── Fetch leads from API ───
   const fetchLeads = useCallback(async () => {
@@ -44,6 +47,20 @@ export default function Leads() {
 
   useEffect(() => {
     fetchLeads();
+    const fetchMasters = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/masters');
+        if (res.ok) {
+          const data = await res.json();
+          setOwners(data.filter(m => m.category === 'Owner'));
+          setSources(data.filter(m => m.category === 'LeadSource'));
+          setIndustries(data.filter(m => m.category === 'Industry'));
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchMasters();
   }, [fetchLeads]);
 
   // ─── Form helpers ───
@@ -190,13 +207,17 @@ export default function Leads() {
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Source</label>
           <select name="source" value={formData.source} onChange={handleInputChange}
             className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
-            <option>LinkedIn</option><option>Referral</option><option>Website</option><option>Cold Outreach</option><option>Webinar</option>
+            <option value="">Select Source...</option>
+            {sources.map(s => <option key={s.id} value={s.value}>{s.value}</option>)}
           </select>
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Industry</label>
-          <input type="text" name="industry" value={formData.industry} onChange={handleInputChange}
-            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none" />
+          <select name="industry" value={formData.industry} onChange={handleInputChange}
+            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
+            <option value="">Select Industry...</option>
+            {industries.map(i => <option key={i.id} value={i.value}>{i.value}</option>)}
+          </select>
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Location</label>
@@ -215,7 +236,8 @@ export default function Leads() {
         <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Assigned To</label>
         <select name="assigned_to" value={formData.assigned_to} onChange={handleInputChange}
           className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
-          <option>Arjun Mehta</option><option>Priya Sharma</option><option>Karan Nair</option><option>Divya Iyer</option>
+          <option value="">Select Owner...</option>
+          {owners.map(o => <option key={o.id} value={o.value}>{o.value}</option>)}
         </select>
       </div>
     </>

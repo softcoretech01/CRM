@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from routers import leads, contacts, accounts, opportunities, activities, dashboard
+from routers import leads, contacts, accounts, opportunities, activities, dashboard, masters
 
 app = FastAPI(
     title="CRM Pro API",
@@ -25,6 +25,7 @@ app.include_router(accounts.router)
 app.include_router(opportunities.router)
 app.include_router(activities.router)
 app.include_router(dashboard.router)
+app.include_router(masters.router)
 
 
 @app.get("/")

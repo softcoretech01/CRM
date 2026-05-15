@@ -19,6 +19,7 @@ export default function Contacts() {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [formData, setFormData] = useState({ ...EMPTY_FORM });
   const [loading, setLoading] = useState(false);
+  const [accountsList, setAccountsList] = useState([]);
 
   // ─── Fetch contacts ───
   const fetchContacts = useCallback(async () => {
@@ -45,6 +46,17 @@ export default function Contacts() {
 
   useEffect(() => {
     fetchContacts();
+    const fetchAccounts = async () => {
+      try {
+        const res = await fetch('http://localhost:8000/api/accounts');
+        if (res.ok) {
+          setAccountsList(await res.json());
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchAccounts();
   }, [fetchContacts]);
 
   // ─── Grouping Logic ───
@@ -153,8 +165,11 @@ export default function Contacts() {
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Company / Account</label>
-          <input type="text" name="account_name" value={formData.account_name} onChange={handleInputChange}
-            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none" />
+          <select name="account_name" value={formData.account_name} onChange={handleInputChange}
+            className="w-full bg-[#0A0D14] border border-[#1F2937] rounded-lg p-2.5 text-sm text-white focus:border-[#6366F1] outline-none appearance-none">
+            <option value="">Select Account...</option>
+            {accountsList.map(a => <option key={a.id} value={a.name}>{a.name}</option>)}
+          </select>
         </div>
         <div>
           <label className="block text-xs text-[#9CA3AF] mb-1 font-semibold">Email</label>

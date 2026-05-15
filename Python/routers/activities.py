@@ -9,12 +9,24 @@ router = APIRouter(prefix="/api/activities", tags=["Activities"])
 @router.get("", response_model=List[ActivityResponse])
 def get_activities():
     rows = call_procedure("sp_get_activities", ())
+    for r in rows:
+        if r.get('due_time') is not None and not isinstance(r['due_time'], str):
+            t_str = str(r['due_time'])
+            if len(t_str.split(':')[0]) == 1:
+                t_str = '0' + t_str
+            r['due_time'] = t_str
     return rows
 
 
 @router.get("/by-date", response_model=List[ActivityResponse])
 def get_activities_by_date(date: str = Query(...)):
     rows = call_procedure("sp_get_activities_by_date", (date,))
+    for r in rows:
+        if r.get('due_time') is not None and not isinstance(r['due_time'], str):
+            t_str = str(r['due_time'])
+            if len(t_str.split(':')[0]) == 1:
+                t_str = '0' + t_str
+            r['due_time'] = t_str
     return rows
 
 
